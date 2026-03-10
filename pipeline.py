@@ -58,7 +58,7 @@ def run_pipeline():
 
     posts = []
 
-    for submission in reddit.subreddit("all").search("Emirates NBD", limit=2):
+    for submission in reddit.subreddit("all").search("Emirates NBD", limit=3):
         print("Fetching comments from post")
 
         submission.comments.replace_more(limit=0)
