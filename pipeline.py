@@ -3,12 +3,20 @@ import pandas as pd
 import re
 from openai import OpenAI
 import os
-from dotenv import load_dotenv
 import streamlit as st
+from datetime import datetime, timedelta, timezone
+
+# ==========================
+# API KEYS
+# ==========================
 
 api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
 
 client = OpenAI(api_key=api_key)
+
+# ==========================
+# REDDIT CONNECTION
+# ==========================
 
 reddit = praw.Reddit(
     client_id="Sluh_7-LceBQjGQ3i61INg",
@@ -16,11 +24,38 @@ reddit = praw.Reddit(
     user_agent="reddit_sentiment_bot"
 )
 
+# ==========================
+# KEYWORDS
+# ==========================
+
+emirates_keywords = [
+    "Emirates NBD",
+    "Emirates bank",
+    "ENBD",
+    "EmiratesNBD"
+]
+
+# ==========================
+# TIME WINDOW (LAST 2 DAYS)
+# ==========================
+
+now = datetime.now(timezone.utc)
+
+two_days_ago = now - timedelta(days=2)
+
+after = int(two_days_ago.timestamp())
+before = int(now.timestamp())
+
+# ==========================
+# CLEAN TEXT
+# ==========================
+
 def clean_text_list(posts):
 
     cleaned = []
 
     for p in posts:
+
         text = re.sub(r"http\S+|@\w+|[^A-Za-z0-9\s]", "", str(p))
         text = re.sub(r"\s+", " ", text).strip()
 
@@ -29,13 +64,16 @@ def clean_text_list(posts):
 
     return cleaned
 
+# ==========================
+# SENTIMENT CLASSIFICATION
+# ==========================
 
 def classify_sentiment(text):
 
     prompt = f"""
     Classify sentiment of the comment.
 
-    Return only one word:
+    Return ONLY one word:
 
     Positive
     Neutral
@@ -52,30 +90,55 @@ def classify_sentiment(text):
 
     return response.output_text.strip()
 
+# ==========================
+# FETCH REDDIT COMMENTS
+# ==========================
+
+def fetch_last_two_days_comments(keywords, limit=100):
+
+    comments_list = []
+
+    for keyword in keywords:
+
+        print("Searching for keyword:", keyword)
+
+        for submission in reddit.subreddit("all").search(keyword, sort="new", limit=limit):
+
+            submission.comments.replace_more(limit=0)
+
+            for comment in submission.comments.list():
+
+                if hasattr(comment, "created_utc"):
+
+                    if after <= comment.created_utc <= before:
+
+                        comments_list.append(comment.body.strip())
+
+    return comments_list
+
+# ==========================
+# MAIN PIPELINE
+# ==========================
 
 def run_pipeline():
+
     print("Pipeline started")
 
-    posts = []
+    posts = fetch_last_two_days_comments(emirates_keywords, limit=100)
 
-    for submission in reddit.subreddit("all").search("Emirates NBD", limit=2):
-        print("Fetching comments from post")
-
-        submission.comments.replace_more(limit=0)
-
-        for comment in submission.comments.list():
-            posts.append(comment.body)
     print("Total comments fetched:", len(posts))
+
     cleaned = clean_text_list(posts)
 
     sentiments = []
 
     for c in cleaned:
-        print("Classifying:", c[:30])
 
+        print("Classifying:", c[:40])
 
         try:
             s = classify_sentiment(c)
+
         except:
             s = "Neutral"
 
@@ -85,6 +148,7 @@ def run_pipeline():
         "comment": cleaned,
         "sentiment": sentiments
     })
+
     print("Pipeline finished")
 
     return df
