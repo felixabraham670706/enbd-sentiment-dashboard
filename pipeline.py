@@ -41,7 +41,7 @@ emirates_keywords = [
 
 now = datetime.now(timezone.utc)
 
-two_days_ago = now - timedelta(days=2)
+two_days_ago = now - timedelta(days=1)
 
 after = int(two_days_ago.timestamp())
 before = int(now.timestamp())
@@ -94,7 +94,7 @@ def classify_sentiment(text):
 # FETCH REDDIT COMMENTS
 # ==========================
 
-def fetch_last_two_days_comments(keywords, limit=100):
+def fetch_last_two_days_comments(keywords, limit=10):
 
     comments_list = []
 
@@ -124,7 +124,7 @@ def run_pipeline():
 
     print("Pipeline started")
 
-    posts = fetch_last_two_days_comments(emirates_keywords, limit=100)
+    posts = fetch_last_two_days_comments(emirates_keywords, limit=10)
 
     print("Total comments fetched:", len(posts))
 
