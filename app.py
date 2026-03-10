@@ -1,8 +1,10 @@
 import streamlit as st
 from pipeline import run_pipeline
+from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
 st.title("Emirates NBD Reddit Sentiment Dashboard")
+st.write("Last refreshed at:", datetime.now())
 
 # refresh every 5 minutes
 st_autorefresh(interval=300000)

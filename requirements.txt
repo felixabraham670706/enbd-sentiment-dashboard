@@ -5,3 +5,4 @@ openai
 streamlit-autorefresh
 python-dotenv
 streamlit
+streamlit-autorefresh
