@@ -2,9 +2,14 @@ import streamlit as st
 from pipeline import run_pipeline
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
+import pytz
 
 st.title("Emirates NBD Reddit Sentiment Dashboard")
-st.write("Last refreshed at:", datetime.now())
+# Dubai timezone
+dubai = pytz.timezone("Asia/Dubai")
+dubai_time = datetime.now(dubai)
+
+st.write("Last refreshed at:", dubai_time.strftime("%Y-%m-%d %H:%M:%S"), "Dubai Time")
 
 # refresh every 5 minutes
 st_autorefresh(interval=300000)
