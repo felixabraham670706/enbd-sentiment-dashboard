@@ -3,3 +3,5 @@ praw
 pandas
 openai
 streamlit-autorefresh
+python-dotenv
+streamlit

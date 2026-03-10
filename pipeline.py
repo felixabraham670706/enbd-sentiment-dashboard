@@ -4,8 +4,11 @@ import re
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+import streamlit as st
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_key = st.secrets.get("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY"))
+
+client = OpenAI(api_key=api_key)
 
 reddit = praw.Reddit(
     client_id="Sluh_7-LceBQjGQ3i61INg",
